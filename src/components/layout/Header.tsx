@@ -1,6 +1,15 @@
-import { Building2, LayoutDashboard, MapPin, BarChart3, Settings, Menu, X, LineChart } from "lucide-react";
+import { Building2, LayoutDashboard, MapPin, BarChart3, Settings, Menu, X, LineChart, LogOut, User } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface HeaderProps {
   activeTab: string;
@@ -17,6 +26,7 @@ const navItems = [
 
 export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { profile, signOut } = useAuth();
 
   return (
     <header className="gradient-primary sticky top-0 z-50 shadow-elegant">
@@ -65,6 +75,38 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
             })}
           </nav>
 
+          {/* User Menu */}
+          <div className="hidden md:flex items-center gap-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  className="text-primary-foreground hover:bg-primary-foreground/20 gap-2"
+                >
+                  <User className="w-4 h-4" />
+                  <span className="max-w-[120px] truncate">
+                    {profile?.ad_soyad || "Kullanıcı"}
+                  </span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel>
+                  <div className="flex flex-col">
+                    <span>{profile?.ad_soyad}</span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {profile?.unvan}
+                    </span>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={signOut} className="text-destructive cursor-pointer">
+                  <LogOut className="w-4 h-4 mr-2" />
+                  Çıkış Yap
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+
           {/* Mobile menu button */}
           <Button
             variant="ghost"
@@ -103,6 +145,24 @@ export const Header = ({ activeTab, onTabChange }: HeaderProps) => {
                 </button>
               );
             })}
+            
+            {/* Mobile User Info & Logout */}
+            <div className="mt-4 pt-4 border-t border-primary-foreground/20">
+              <div className="px-4 py-2 text-sm text-primary-foreground/70">
+                <div className="font-medium text-primary-foreground">{profile?.ad_soyad}</div>
+                <div className="text-xs">{profile?.unvan}</div>
+              </div>
+              <button
+                onClick={() => {
+                  signOut();
+                  setMobileMenuOpen(false);
+                }}
+                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sm font-medium text-red-300 hover:bg-red-500/20 transition-all duration-200"
+              >
+                <LogOut className="w-5 h-5" />
+                <span>Çıkış Yap</span>
+              </button>
+            </div>
           </nav>
         )}
       </div>
