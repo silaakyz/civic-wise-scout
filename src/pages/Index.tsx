@@ -9,6 +9,7 @@ import { RecommendationsPanel } from "@/components/dashboard/RecommendationsPane
 import { ScenarioAnalysis } from "@/components/scenarios/ScenarioAnalysis";
 import { ResourceAllocation } from "@/components/allocation/ResourceAllocation";
 import { InteractiveMap } from "@/components/map/InteractiveMap";
+import { LiveAnalytics } from "@/components/analytics/LiveAnalytics";
 import { districtData } from "@/data/districtData";
 import heroBg from "@/assets/hero-bg.jpg";
 import {
@@ -122,6 +123,9 @@ const Index = () => {
             </div>
           </div>
         );
+
+      case "analytics":
+        return <LiveAnalytics districts={districtData} />;
 
       case "map":
         return <InteractiveMap districts={districtData} />;
