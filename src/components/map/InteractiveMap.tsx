@@ -1,31 +1,182 @@
 import { useEffect, useRef, useState } from "react";
+import mapboxgl from "mapbox-gl";
+import "mapbox-gl/dist/mapbox-gl.css";
 import { District, getScoreColor } from "@/data/districtData";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { RadarAnalysis } from "@/components/dashboard/RadarAnalysis";
-import { MapPin, ZoomIn, ZoomOut, Layers } from "lucide-react";
+import { MapPin, Key, ExternalLink } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface InteractiveMapProps {
   districts: District[];
 }
 
 export const InteractiveMap = ({ districts }: InteractiveMapProps) => {
-  const mapRef = useRef<HTMLDivElement>(null);
+  const mapContainer = useRef<HTMLDivElement>(null);
+  const map = useRef<mapboxgl.Map | null>(null);
+  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  
   const [selectedDistrict, setSelectedDistrict] = useState<District | null>(null);
-  const [zoom, setZoom] = useState(1);
+  const [mapboxToken, setMapboxToken] = useState<string>(() => {
+    return localStorage.getItem("mapbox_token") || "";
+  });
+  const [tokenInput, setTokenInput] = useState("");
+  const [mapLoaded, setMapLoaded] = useState(false);
 
-  // Simple interactive map visualization (without Leaflet for simplicity)
-  const mapCenter = { lat: 38.4192, lng: 27.1287 };
-
-  const getPosition = (coords: [number, number]) => {
-    const latRange = { min: 38.25, max: 38.55 };
-    const lngRange = { min: 26.9, max: 27.35 };
-    
-    const x = ((coords[1] - lngRange.min) / (lngRange.max - lngRange.min)) * 100;
-    const y = ((latRange.max - coords[0]) / (latRange.max - latRange.min)) * 100;
-    
-    return { x: `${x}%`, y: `${y}%` };
+  const handleSaveToken = () => {
+    if (tokenInput.trim()) {
+      localStorage.setItem("mapbox_token", tokenInput.trim());
+      setMapboxToken(tokenInput.trim());
+    }
   };
+
+  useEffect(() => {
+    if (!mapContainer.current || !mapboxToken) return;
+
+    // Initialize map
+    mapboxgl.accessToken = mapboxToken;
+
+    try {
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: "mapbox://styles/mapbox/light-v11",
+        center: [27.1287, 38.4192], // İzmir coordinates
+        zoom: 10,
+        pitch: 30,
+      });
+
+      // Add navigation controls
+      map.current.addControl(
+        new mapboxgl.NavigationControl({
+          visualizePitch: true,
+        }),
+        "top-right"
+      );
+
+      map.current.on("load", () => {
+        setMapLoaded(true);
+      });
+
+      // Add district markers
+      map.current.on("style.load", () => {
+        // Clear existing markers
+        markersRef.current.forEach((marker) => marker.remove());
+        markersRef.current = [];
+
+        districts.forEach((district) => {
+          const color = getScoreColor(district.scores.overall);
+          const size = Math.max(30, district.radius / 20);
+
+          // Create custom marker element
+          const el = document.createElement("div");
+          el.className = "district-marker";
+          el.style.width = `${size}px`;
+          el.style.height = `${size}px`;
+          el.style.backgroundColor = color;
+          el.style.borderRadius = "50%";
+          el.style.border = "3px solid white";
+          el.style.boxShadow = `0 0 15px ${color}, 0 2px 10px rgba(0,0,0,0.3)`;
+          el.style.cursor = "pointer";
+          el.style.display = "flex";
+          el.style.alignItems = "center";
+          el.style.justifyContent = "center";
+          el.style.transition = "transform 0.2s, box-shadow 0.2s";
+          el.innerHTML = `<span style="color: white; font-size: 11px; font-weight: bold;">${district.scores.overall.toFixed(1)}</span>`;
+
+          el.addEventListener("mouseenter", () => {
+            el.style.transform = "scale(1.2)";
+            el.style.boxShadow = `0 0 25px ${color}, 0 4px 15px rgba(0,0,0,0.4)`;
+          });
+
+          el.addEventListener("mouseleave", () => {
+            el.style.transform = "scale(1)";
+            el.style.boxShadow = `0 0 15px ${color}, 0 2px 10px rgba(0,0,0,0.3)`;
+          });
+
+          el.addEventListener("click", () => {
+            setSelectedDistrict(district);
+            map.current?.flyTo({
+              center: [district.coordinates[1], district.coordinates[0]],
+              zoom: 12,
+              duration: 1000,
+            });
+          });
+
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([district.coordinates[1], district.coordinates[0]])
+            .setPopup(
+              new mapboxgl.Popup({ offset: 25 }).setHTML(`
+                <div style="padding: 8px;">
+                  <h4 style="font-weight: bold; margin-bottom: 4px;">${district.name}</h4>
+                  <p style="color: #666; font-size: 12px;">Skor: <strong style="color: ${color}">${district.scores.overall.toFixed(1)}</strong>/10</p>
+                </div>
+              `)
+            )
+            .addTo(map.current!);
+
+          markersRef.current.push(marker);
+        });
+      });
+
+      // Cleanup
+      return () => {
+        markersRef.current.forEach((marker) => marker.remove());
+        map.current?.remove();
+      };
+    } catch (error) {
+      console.error("Mapbox initialization error:", error);
+    }
+  }, [mapboxToken, districts]);
+
+  // Token input screen
+  if (!mapboxToken) {
+    return (
+      <div className="space-y-6 animate-fade-up">
+        <Card className="glass-card max-w-xl mx-auto">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <Key className="w-5 h-5 text-primary" />
+              </div>
+              Mapbox API Anahtarı Gerekli
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground">
+              İzmir haritasını görüntülemek için Mapbox public token'ınızı girin. 
+              Token'ınızı{" "}
+              <a
+                href="https://mapbox.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline inline-flex items-center gap-1"
+              >
+                mapbox.com <ExternalLink className="w-3 h-3" />
+              </a>{" "}
+              adresinden ücretsiz alabilirsiniz.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="text"
+                placeholder="pk.eyJ1IjoieW91..."
+                value={tokenInput}
+                onChange={(e) => setTokenInput(e.target.value)}
+                className="flex-1"
+              />
+              <Button onClick={handleSaveToken} disabled={!tokenInput.trim()}>
+                Kaydet
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Token tarayıcınızda yerel olarak saklanacaktır.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -44,110 +195,42 @@ export const InteractiveMap = ({ districts }: InteractiveMapProps) => {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))}
-            >
-              <ZoomOut className="w-4 h-4" />
-            </Button>
-            <Badge variant="secondary">{Math.round(zoom * 100)}%</Badge>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => setZoom((z) => Math.min(2, z + 0.25))}
-            >
-              <ZoomIn className="w-4 h-4" />
-            </Button>
-          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              localStorage.removeItem("mapbox_token");
+              setMapboxToken("");
+            }}
+          >
+            Token Değiştir
+          </Button>
         </div>
 
         <div
-          ref={mapRef}
+          ref={mapContainer}
           className="relative w-full h-[500px] rounded-2xl overflow-hidden border-2 border-primary/20"
-          style={{
-            background: `
-              linear-gradient(135deg, 
-                hsl(var(--primary) / 0.05) 0%, 
-                hsl(var(--accent) / 0.1) 50%,
-                hsl(var(--primary) / 0.05) 100%
-              )
-            `,
-          }}
-        >
-          {/* Map background pattern */}
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: `radial-gradient(circle at 2px 2px, hsl(var(--primary)) 1px, transparent 0)`,
-              backgroundSize: "32px 32px",
-            }}
-          />
+        />
 
-          {/* District markers */}
-          <div
-            className="absolute inset-0 transition-transform duration-300"
-            style={{ transform: `scale(${zoom})`, transformOrigin: "center" }}
-          >
-            {districts.map((district) => {
-              const pos = getPosition(district.coordinates);
-              const color = getScoreColor(district.scores.overall);
-              const isSelected = selectedDistrict?.id === district.id;
-              const size = Math.max(40, district.radius / 15);
-
-              return (
-                <button
-                  key={district.id}
-                  className={`
-                    absolute transform -translate-x-1/2 -translate-y-1/2
-                    rounded-full flex items-center justify-center
-                    transition-all duration-300 cursor-pointer
-                    hover:scale-110 hover:z-20
-                    ${isSelected ? "ring-4 ring-primary ring-offset-2 z-30 scale-110" : ""}
-                  `}
-                  style={{
-                    left: pos.x,
-                    top: pos.y,
-                    width: `${size}px`,
-                    height: `${size}px`,
-                    backgroundColor: color,
-                    boxShadow: `0 0 ${isSelected ? 30 : 15}px ${color}`,
-                    opacity: 0.85,
-                  }}
-                  onClick={() => setSelectedDistrict(district)}
-                >
-                  <span
-                    className="text-xs font-bold"
-                    style={{ color: district.scores.overall > 6 ? "#fff" : "#fff" }}
-                  >
-                    {district.scores.overall.toFixed(1)}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Legend */}
-          <div className="absolute bottom-4 left-4 glass p-3 rounded-xl">
-            <p className="text-xs font-semibold text-foreground mb-2">Skor Ölçeği</p>
-            <div className="flex items-center gap-1">
-              {[
-                { color: "hsl(0, 72%, 51%)", label: "1-4" },
-                { color: "hsl(30, 100%, 50%)", label: "4-5.5" },
-                { color: "hsl(45, 100%, 50%)", label: "5.5-7" },
-                { color: "hsl(84, 60%, 45%)", label: "7-8.5" },
-                { color: "hsl(142, 71%, 35%)", label: "8.5+" },
-              ].map((item) => (
-                <div key={item.label} className="flex flex-col items-center gap-1">
-                  <div
-                    className="w-5 h-5 rounded"
-                    style={{ backgroundColor: item.color }}
-                  />
-                  <span className="text-[10px] text-muted-foreground">{item.label}</span>
-                </div>
-              ))}
-            </div>
+        {/* Legend */}
+        <div className="mt-4 flex items-center justify-center gap-6">
+          <p className="text-sm font-semibold text-foreground">Skor Ölçeği:</p>
+          <div className="flex items-center gap-3">
+            {[
+              { color: "hsl(0, 72%, 51%)", label: "1-4" },
+              { color: "hsl(30, 100%, 50%)", label: "4-5.5" },
+              { color: "hsl(45, 100%, 50%)", label: "5.5-7" },
+              { color: "hsl(84, 60%, 45%)", label: "7-8.5" },
+              { color: "hsl(142, 71%, 35%)", label: "8.5+" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-1">
+                <div
+                  className="w-4 h-4 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-xs text-muted-foreground">{item.label}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -155,7 +238,7 @@ export const InteractiveMap = ({ districts }: InteractiveMapProps) => {
       {selectedDistrict && (
         <div className="grid lg:grid-cols-2 gap-6">
           <RadarAnalysis district={selectedDistrict} />
-          
+
           <div className="glass-card p-6 animate-fade-up">
             <h3 className="text-lg font-bold text-foreground mb-4">
               {selectedDistrict.name} - Önerilen Aksiyonlar
