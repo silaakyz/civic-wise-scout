@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, MapPin, BarChart3, Settings, Menu, X } from "lucide-react";
+import { Building2, LayoutDashboard, MapPin, BarChart3, Settings, Menu, X, LineChart } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
@@ -9,6 +9,7 @@ interface HeaderProps {
 
 const navItems = [
   { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { id: "analytics", label: "Veri Analizi", icon: LineChart },
   { id: "map", label: "Harita Analizi", icon: MapPin },
   { id: "scenarios", label: "Senaryo Analizi", icon: BarChart3 },
   { id: "allocation", label: "Kaynak Dağıtımı", icon: Settings },
