@@ -2,95 +2,110 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* LuxCivic Brand Colors - Teal/Cyan Theme */
+    --background: 195 20% 98%;
+    --foreground: 200 50% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 200 50% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 200 50% 10%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Primary - Deep Teal */
+    --primary: 185 100% 20%;
+    --primary-foreground: 180 100% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Secondary - Light Cyan */
+    --secondary: 187 50% 95%;
+    --secondary-foreground: 185 100% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted */
+    --muted: 190 30% 95%;
+    --muted-foreground: 190 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Teal glow */
+    --accent: 187 80% 35%;
+    --accent-foreground: 180 100% 98%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 190 25% 88%;
+    --input: 190 25% 88%;
+    --ring: 185 100% 30%;
 
-    --radius: 0.5rem;
+    --radius: 0.75rem;
 
-    --sidebar-background: 0 0% 98%;
+    /* Custom LuxCivic tokens */
+    --luxcivic-teal: 185 100% 20%;
+    --luxcivic-teal-light: 187 80% 35%;
+    --luxcivic-cyan: 180 60% 45%;
+    --luxcivic-gradient-start: 185 100% 20%;
+    --luxcivic-gradient-end: 187 80% 35%;
+    
+    /* Score colors */
+    --score-excellent: 142 71% 35%;
+    --score-good: 84 60% 45%;
+    --score-moderate: 45 100% 50%;
+    --score-warning: 30 100% 50%;
+    --score-critical: 0 72% 51%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Glassmorphism */
+    --glass-bg: 0 0% 100% / 0.85;
+    --glass-border: 0 0% 100% / 0.2;
 
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-background: 185 100% 20%;
+    --sidebar-foreground: 180 100% 98%;
+    --sidebar-primary: 187 80% 60%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 185 80% 25%;
+    --sidebar-accent-foreground: 180 100% 98%;
+    --sidebar-border: 185 60% 30%;
+    --sidebar-ring: 187 80% 60%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 200 50% 5%;
+    --foreground: 180 20% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 200 40% 8%;
+    --card-foreground: 180 20% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 200 40% 8%;
+    --popover-foreground: 180 20% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 187 80% 50%;
+    --primary-foreground: 200 50% 5%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 200 30% 15%;
+    --secondary-foreground: 180 20% 95%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 200 30% 15%;
+    --muted-foreground: 190 15% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 187 60% 40%;
+    --accent-foreground: 180 20% 95%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 40%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 200 30% 18%;
+    --input: 200 30% 18%;
+    --ring: 187 80% 50%;
+
+    --sidebar-background: 200 50% 6%;
+    --sidebar-foreground: 180 20% 95%;
+    --sidebar-primary: 187 80% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 200 30% 12%;
+    --sidebar-accent-foreground: 180 20% 95%;
+    --sidebar-border: 200 30% 15%;
+    --sidebar-ring: 187 80% 50%;
   }
 }
 
@@ -99,7 +114,154 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground;
+  html {
+    scroll-behavior: smooth;
   }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  }
+}
+
+@layer utilities {
+  /* Glassmorphism utilities */
+  .glass {
+    @apply bg-white/85 backdrop-blur-xl border border-white/20;
+  }
+
+  .glass-card {
+    @apply bg-white/90 backdrop-blur-xl rounded-2xl border border-white/30 shadow-lg;
+  }
+
+  /* Gradient utilities */
+  .gradient-primary {
+    background: linear-gradient(135deg, hsl(var(--luxcivic-teal)) 0%, hsl(var(--luxcivic-teal-light)) 100%);
+  }
+
+  .gradient-subtle {
+    background: linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--muted)) 100%);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(185, 100%, 20%) 0%, hsl(180, 60%, 45%) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Animations */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .animate-scale-in {
+    animation: scaleIn 0.4s ease-out forwards;
+  }
+
+  /* Hover effects */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+
+  .hover-lift:hover {
+    @apply -translate-y-2 shadow-2xl;
+  }
+
+  .hover-glow:hover {
+    box-shadow: 0 0 40px hsl(var(--luxcivic-teal-light) / 0.3);
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(30px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { 
+    opacity: 0; 
+    transform: scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+/* Score card styling */
+.score-excellent {
+  @apply border-l-4;
+  border-left-color: hsl(var(--score-excellent));
+  background: linear-gradient(135deg, hsl(var(--score-excellent) / 0.1), hsl(var(--score-excellent) / 0.05));
+}
+
+.score-good {
+  @apply border-l-4;
+  border-left-color: hsl(var(--score-good));
+  background: linear-gradient(135deg, hsl(var(--score-good) / 0.1), hsl(var(--score-good) / 0.05));
+}
+
+.score-moderate {
+  @apply border-l-4;
+  border-left-color: hsl(var(--score-moderate));
+  background: linear-gradient(135deg, hsl(var(--score-moderate) / 0.1), hsl(var(--score-moderate) / 0.05));
+}
+
+.score-warning {
+  @apply border-l-4;
+  border-left-color: hsl(var(--score-warning));
+  background: linear-gradient(135deg, hsl(var(--score-warning) / 0.1), hsl(var(--score-warning) / 0.05));
+}
+
+.score-critical {
+  @apply border-l-4;
+  border-left-color: hsl(var(--score-critical));
+  background: linear-gradient(135deg, hsl(var(--score-critical) / 0.1), hsl(var(--score-critical) / 0.05));
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-muted/50 rounded-full;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-primary/30 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-primary/50;
 }
