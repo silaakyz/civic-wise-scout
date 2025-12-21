@@ -61,28 +61,55 @@ const Auth = () => {
     // Create email from TC kimlik
     const email = `${loginTc}@belediye.gov.tr`;
     
-    const { error } = await supabase.auth.signInWithPassword({
+    const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: loginPassword,
     });
     
-    setIsLoading(false);
-    
     if (error) {
+      setIsLoading(false);
+      console.error('Login error:', error);
+      
+      // Daha detaylı hata mesajları
+      let errorMessage = "TC Kimlik numarası veya şifre hatalı.";
+      if (error.message.includes("Email not confirmed")) {
+        errorMessage = "Email onaylanmamış. Lütfen email'inizi kontrol edin.";
+      } else if (error.message.includes("Invalid login credentials")) {
+        errorMessage = "TC Kimlik numarası veya şifre hatalı.";
+      } else if (error.message.includes("User not found")) {
+        errorMessage = "Kullanıcı bulunamadı. Lütfen önce hesap oluşturun.";
+      }
+      
       toast({
         title: "Giriş Başarısız",
-        description: "TC Kimlik numarası veya şifre hatalı.",
+        description: errorMessage,
         variant: "destructive",
       });
       return;
     }
     
-    toast({
-      title: "Giriş Başarılı",
-      description: "Hoş geldiniz!",
-    });
-    
-    navigate("/");
+    // Session başarıyla oluşturuldu
+    if (data.session && data.user) {
+      // Auth state'in güncellenmesi için kısa bir bekleme
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      setIsLoading(false);
+      
+      toast({
+        title: "Giriş Başarılı",
+        description: "Hoş geldiniz!",
+      });
+      
+      // Navigate yerine window.location kullan (daha güvenilir)
+      window.location.href = "/";
+    } else {
+      setIsLoading(false);
+      toast({
+        title: "Hata",
+        description: "Giriş yapılamadı. Lütfen tekrar deneyin.",
+        variant: "destructive",
+      });
+    }
   };
 
   const createTestUser = async () => {
@@ -120,6 +147,9 @@ const Auth = () => {
           throw error;
         }
       } else if (data.user) {
+        // Email confirmation'ı atla (test için)
+        // Not: Production'da email confirmation açık olmalı
+        
         // Create profile for the user
         const { error: profileError } = await supabase
           .from("profiles")
@@ -134,13 +164,29 @@ const Auth = () => {
           console.log("Profile might already exist:", profileError);
         }
 
-        toast({
-          title: "Başarılı",
-          description: "Test kullanıcısı oluşturuldu. Şimdi giriş yapabilirsiniz.",
+        // Kullanıcıyı otomatik giriş yap
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+          email,
+          password,
         });
-        
-        setLoginTc(tcKimlik);
-        setLoginPassword(password);
+
+        if (signInError) {
+          toast({
+            title: "Bilgi",
+            description: "Kullanıcı oluşturuldu. Lütfen giriş yapın.",
+          });
+          setLoginTc(tcKimlik);
+          setLoginPassword(password);
+        } else {
+          toast({
+            title: "Başarılı",
+            description: "Test kullanıcısı oluşturuldu ve giriş yapıldı!",
+          });
+          // Kısa bir bekleme sonrası yönlendir
+          setTimeout(() => {
+            window.location.href = "/";
+          }, 1000);
+        }
       }
     } catch (error) {
       console.error("Error creating test user:", error);
