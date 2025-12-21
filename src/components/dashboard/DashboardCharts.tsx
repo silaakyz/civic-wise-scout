@@ -2,6 +2,13 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { BarChart3, LineChart as LineChartIcon, Activity } from "lucide-react";
 import {
   BarChart,
@@ -268,12 +275,29 @@ export const DashboardCharts = ({ districts, allDistricts }: DashboardChartsProp
         {/* Radar Chart */}
         <Card className="bg-card/50 backdrop-blur-sm border-border/50">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">
-              Kategori Analizi
-            </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              {selectedDistrict?.name || districts[0]?.name || "Bölge seçin"}
-            </p>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-semibold">
+                Kategori Analizi
+              </CardTitle>
+            </div>
+            <Select
+              value={selectedDistrict?.id?.toString() || allDistricts[0]?.id?.toString()}
+              onValueChange={(value) => {
+                const district = allDistricts.find((d) => d.id.toString() === value);
+                setSelectedDistrict(district || null);
+              }}
+            >
+              <SelectTrigger className="w-full h-8 text-xs">
+                <SelectValue placeholder="İlçe seçin" />
+              </SelectTrigger>
+              <SelectContent className="max-h-64 bg-popover z-50">
+                {allDistricts.map((district) => (
+                  <SelectItem key={district.id} value={district.id.toString()} className="text-xs">
+                    {district.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="radar" className="w-full">
