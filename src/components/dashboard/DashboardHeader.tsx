@@ -1,5 +1,6 @@
 import { RotateCcw, Download, Maximize2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { DistrictComparisonDialog } from "./DistrictComparisonDialog";
 
 interface DashboardHeaderProps {
   onReset: () => void;
@@ -23,6 +24,7 @@ export const DashboardHeader = ({ onReset }: DashboardHeaderProps) => {
       </div>
 
       <div className="flex items-center gap-2">
+        <DistrictComparisonDialog />
         <Button variant="outline" size="sm" className="gap-2">
           <Calendar className="w-4 h-4" />
           <span className="hidden sm:inline">Son 30 Gün</span>
