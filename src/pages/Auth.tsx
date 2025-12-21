@@ -36,6 +36,8 @@ const Auth = () => {
     }
   }, [user, loading, navigate]);
 
+  const [isCreating, setIsCreating] = useState(false);
+
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -81,6 +83,75 @@ const Auth = () => {
     });
     
     navigate("/");
+  };
+
+  const createTestUser = async () => {
+    setIsCreating(true);
+    
+    const tcKimlik = "12345678901";
+    const password = "123456";
+    const email = `${tcKimlik}@belediye.gov.tr`;
+    const adSoyad = "Test Kullanıcı";
+
+    try {
+      // Try to sign up the test user
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            tc_kimlik: tcKimlik,
+            ad_soyad: adSoyad,
+          },
+        },
+      });
+
+      if (error) {
+        // If user already exists, just inform them
+        if (error.message.includes("already registered")) {
+          toast({
+            title: "Bilgi",
+            description: "Test kullanıcısı zaten mevcut. Giriş yapabilirsiniz.",
+          });
+          setLoginTc(tcKimlik);
+          setLoginPassword(password);
+        } else {
+          throw error;
+        }
+      } else if (data.user) {
+        // Create profile for the user
+        const { error: profileError } = await supabase
+          .from("profiles")
+          .insert({
+            user_id: data.user.id,
+            tc_kimlik: tcKimlik,
+            ad_soyad: adSoyad,
+            unvan: "Bütçe Yönetim Müdürü",
+          });
+
+        if (profileError) {
+          console.log("Profile might already exist:", profileError);
+        }
+
+        toast({
+          title: "Başarılı",
+          description: "Test kullanıcısı oluşturuldu. Şimdi giriş yapabilirsiniz.",
+        });
+        
+        setLoginTc(tcKimlik);
+        setLoginPassword(password);
+      }
+    } catch (error) {
+      console.error("Error creating test user:", error);
+      toast({
+        title: "Hata",
+        description: "Test kullanıcısı oluşturulamadı.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
   };
 
   if (loading) {
@@ -156,6 +227,32 @@ const Auth = () => {
                     </>
                   ) : (
                     "Giriş Yap"
+                  )}
+                </Button>
+
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-border" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-card px-2 text-muted-foreground">veya</span>
+                  </div>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={createTestUser}
+                  disabled={isCreating}
+                >
+                  {isCreating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Oluşturuluyor...
+                    </>
+                  ) : (
+                    "Demo Hesabı Oluştur"
                   )}
                 </Button>
               </form>
