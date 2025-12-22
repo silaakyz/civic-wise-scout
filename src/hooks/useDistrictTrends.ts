@@ -100,3 +100,4 @@ export const useMonthlyTrends = (districtIds: number[]) => {
 
   return { monthlyData, loading };
 };
+

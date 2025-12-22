@@ -80,3 +80,4 @@ export const useQuarterlyScores = (year: string = '2024') => {
 
   return { quarterlyData, loading };
 };
+

@@ -48,3 +48,4 @@ export const useDistricts = () => {
 
   return { districts, loading, error };
 };
+

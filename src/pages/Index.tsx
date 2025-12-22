@@ -1,3 +1,4 @@
+import IzmirMap from "@/components/map/IzmirMap";
 import { useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { Header } from "@/components/layout/Header";
