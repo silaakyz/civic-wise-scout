@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { District, criteriaWeights } from "@/data/districtData";
+import { District, criteriaWeights } from "@/lib/district";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

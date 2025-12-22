@@ -1,4 +1,4 @@
-import { District, getScoreColor } from "@/data/districtData";
+import { District, getScoreColor } from "@/lib/district";
 import {
   Dialog,
   DialogContent,

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { District } from "@/data/districtData";
+import { District } from "@/lib/district";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";

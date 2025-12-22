@@ -18,7 +18,7 @@ import {
   ChevronRight,
   ExternalLink,
 } from "lucide-react";
-import { District } from "@/data/districtData";
+import { District } from "@/lib/district";
 import { cn } from "@/lib/utils";
 import { DistrictDetailDialog } from "./DistrictDetailDialog";
 

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { District, getScoreColor, districtData } from "@/data/districtData";
+import { District, getScoreColor } from "@/lib/district";
+import { useDistricts } from "@/hooks/useDistricts";
 import {
   Dialog,
   DialogContent,
@@ -84,8 +85,11 @@ export const DistrictComparisonDialog = ({ trigger }: DistrictComparisonDialogPr
   const [district1Id, setDistrict1Id] = useState<string>("");
   const [district2Id, setDistrict2Id] = useState<string>("");
 
-  const district1 = districtData.find((d) => d.id.toString() === district1Id);
-  const district2 = districtData.find((d) => d.id.toString() === district2Id);
+  // Use DB-provided districts instead of the old mock `districtData` array
+  const { districts } = useDistricts();
+
+  const district1 = districts.find((d) => d.id.toString() === district1Id);
+  const district2 = districts.find((d) => d.id.toString() === district2Id);
 
   const color1 = district1 ? getScoreColor(district1.scores.overall) : "#3b82f6";
   const color2 = district2 ? getScoreColor(district2.scores.overall) : "#8b5cf6";
@@ -152,7 +156,7 @@ export const DistrictComparisonDialog = ({ trigger }: DistrictComparisonDialogPr
                 <SelectValue placeholder="İlçe seçin" />
               </SelectTrigger>
               <SelectContent className="bg-popover z-50 max-h-64">
-                {districtData.map((d) => (
+                {districts.map((d) => (
                   <SelectItem
                     key={d.id}
                     value={d.id.toString()}
@@ -171,7 +175,7 @@ export const DistrictComparisonDialog = ({ trigger }: DistrictComparisonDialogPr
                 <SelectValue placeholder="İlçe seçin" />
               </SelectTrigger>
               <SelectContent className="bg-popover z-50 max-h-64">
-                {districtData.map((d) => (
+                {districts.map((d) => (
                   <SelectItem
                     key={d.id}
                     value={d.id.toString()}

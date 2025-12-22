@@ -30,7 +30,7 @@ import {
   Legend,
   Cell,
 } from "recharts";
-import { District } from "@/data/districtData";
+import { District } from "@/lib/district";
 
 interface DashboardChartsProps {
   districts: District[];

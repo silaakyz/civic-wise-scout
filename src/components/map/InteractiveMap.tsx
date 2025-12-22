@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { District, getScoreColor } from "@/data/districtData";
+import { District, getScoreColor } from "@/lib/district";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { RadarAnalysis } from "@/components/dashboard/RadarAnalysis";

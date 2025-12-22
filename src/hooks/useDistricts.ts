@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { District } from '@/data/districtData';
+import { District } from '@/lib/district';
 
 export const useDistricts = () => {
   const [districts, setDistricts] = useState<District[]>([]);
@@ -20,8 +20,8 @@ export const useDistricts = () => {
 
         // Safety timeout so UI doesn't stay stuck
         timeoutId = setTimeout(() => {
-          console.warn(`[useDistricts] Fetching districts timed out after ${timeoutMs}ms — using fallback mock data`);
-          setDistricts([]); // caller will fall back to `districtData` in the page
+          console.warn(`[useDistricts] Fetching districts timed out after ${timeoutMs}ms — falling back to empty list`);
+          setDistricts([]); // falling back to an empty list when fetch times out
           setError('Timeout while fetching districts');
           setLoading(false);
         }, timeoutMs);

@@ -6,7 +6,6 @@ import { ScenarioAnalysis } from "@/components/scenarios/ScenarioAnalysis";
 import { ResourceAllocation } from "@/components/allocation/ResourceAllocation";
 import { InteractiveMap } from "@/components/map/InteractiveMap";
 import { LiveAnalytics } from "@/components/analytics/LiveAnalytics";
-import { districtData } from "@/data/districtData";
 import { useDistricts } from "@/hooks/useDistricts";
 import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
 import { DashboardKPICards } from "@/components/dashboard/DashboardKPICards";
@@ -23,8 +22,8 @@ const Index = () => {
   // Veritabanından verileri çek
   const { districts: dbDistricts, loading, error } = useDistricts();
   
-  // Veritabanı verileri yoksa fallback olarak mock verileri kullan
-  const allDistricts = dbDistricts.length > 0 ? dbDistricts : districtData;
+  // Use districts from DB only (mock fallback removed)
+  const allDistricts = dbDistricts;
 
   // Filter districts based on criteria
   const filteredDistricts = useMemo(() => {

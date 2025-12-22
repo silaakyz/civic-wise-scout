@@ -1,4 +1,4 @@
-import { District, getScoreClass, getScoreColor } from "@/data/districtData";
+import { District, getScoreClass, getScoreColor } from "@/lib/district";
 import { cn } from "@/lib/utils";
 import { 
   Building2, 

@@ -7,7 +7,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { District } from "@/data/districtData";
+import { District } from "@/lib/district";
 
 interface RadarAnalysisProps {
   district: District;

@@ -1,4 +1,4 @@
-import { District } from "@/data/districtData";
+import { District } from "@/lib/district";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, AlertCircle, Clock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
