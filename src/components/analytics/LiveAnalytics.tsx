@@ -1,365 +1,212 @@
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useRef } from 'react';
 import { District } from "@/lib/district";
-import {
-  AreaChart,
-  Area,
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import { TrendingUp, TrendingDown, Calendar, BarChart3 } from "lucide-react";
 
-interface LiveAnalyticsProps {
-  districts: District[];
-}
+export const LiveAnalytics = ({ districts: propDistricts }: { districts: District[] }) => {
+    const mainChartRef = useRef<Chart | null>(null);
+    const yearChartRef = useRef<Chart | null>(null);
 
-// Monthly historical data for 12 months
-const generateMonthlyData = (districts: District[]) => {
-  const months = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
-  return months.map((month, index) => {
-    const baseData: Record<string, string | number> = { month };
-    districts.forEach((district) => {
-      const variation = Math.sin((index / 12) * Math.PI * 2) * 0.5 + (Math.random() - 0.5) * 0.3;
-      baseData[district.name] = Math.max(1, Math.min(10, district.scores.overall + variation)).toFixed(1);
-    });
-    return baseData;
-  });
-};
+    useEffect(() => {
+        // Wrapper logic for existing script
+        const districts = [
+            { id: 1, name: "Konak", scores: { overall: 8 } },
+            { id: 2, name: "Karşıyaka", scores: { overall: 6 } },
+            { id: 3, name: "Bornova", scores: { overall: 6 } },
+            { id: 4, name: "Buca", scores: { overall: 6 } },
+            { id: 5, name: "Bayraklı", scores: { overall: 7 } },
+            { id: 6, name: "Çiğli", scores: { overall: 6 } }
+        ];
 
-// Quarterly comparison data
-const generateQuarterlyData = (districts: District[], year: string) => {
-  const quarters = [`Q1 ${year}`, `Q2 ${year}`, `Q3 ${year}`, `Q4 ${year}`];
-  return quarters.map((quarter, index) => {
-    const baseData: Record<string, string | number> = { quarter };
-    districts.forEach((district) => {
-      const yearOffset = year === "2023" ? -0.6 : year === "2024" ? -0.3 : 0;
-      const trend = index * 0.15;
-      const variation = (Math.random() - 0.5) * 0.4;
-      baseData[district.name] = Math.max(1, Math.min(10, district.scores.overall + yearOffset + trend + variation)).toFixed(1);
-    });
-    return baseData;
-  });
-};
+        const viewModeSelect = document.getElementById('viewModeSelect') as HTMLSelectElement;
+        const yearSelect = document.getElementById('yearSelect') as HTMLSelectElement;
+        const districtSelect = document.getElementById('districtSelect') as HTMLSelectElement;
+        const mainChartTitle = document.getElementById('mainChartTitle');
+        const summaryContainer = document.getElementById('summaryContainer');
+        const mainChartCanvas = (document.getElementById('mainChart') as HTMLCanvasElement).getContext('2d');
+        const yearChartCanvas = (document.getElementById('yearComparisonChart') as HTMLCanvasElement).getContext('2d');
+        const colors = ['#006064', '#00838f', '#0097a7', '#00acc1', '#00bcd4', '#26c6da', '#4dd0e1', '#80deea', '#b2ebf2', '#e0f7fa'];
 
-// Year-over-year comparison
-const generateYearComparison = (districts: District[]) => {
-  return districts.map((district) => {
-    const score2023 = Math.max(1, Math.min(10, district.scores.overall - 0.8 + (Math.random() - 0.5) * 0.4));
-    const score2024 = Math.max(1, Math.min(10, district.scores.overall - 0.3 + (Math.random() - 0.5) * 0.3));
-    const score2025 = district.scores.overall;
-    return {
-      name: district.name,
-      "2023": score2023.toFixed(1),
-      "2024": score2024.toFixed(1),
-      "2025": score2025.toFixed(1),
-    };
-  });
-};
+        // Access Chart from window
+        const Chart = (window as any).Chart;
 
-const colors = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
-  "hsl(187, 85%, 43%)",
-  "hsl(200, 85%, 45%)",
-  "hsl(160, 70%, 40%)",
-  "hsl(280, 65%, 55%)",
-  "hsl(45, 90%, 50%)",
-];
+        function generateMonthlyData(selectedDistricts) {
+            const months = ["Oca", "Şub", "Mar", "Nis", "May", "Haz", "Tem", "Ağu", "Eyl", "Eki", "Kas", "Ara"];
+            return months.map((month, index) => {
+                const obj = { month };
+                selectedDistricts.forEach(d => {
+                    const variation = Math.sin((index / 12) * Math.PI * 2) * 0.5 + (Math.random() - 0.5) * 0.3;
+                    obj[d.name] = Math.min(10, Math.max(1, d.scores.overall + variation));
+                });
+                return obj;
+            });
+        }
 
-export const LiveAnalytics = ({ districts }: LiveAnalyticsProps) => {
-  const [selectedDistricts, setSelectedDistricts] = useState<string[]>(
-    districts.slice(0, 5).map((d) => d.name)
-  );
-  const [viewMode, setViewMode] = useState<"monthly" | "quarterly">("monthly");
-  const [selectedYear, setSelectedYear] = useState<"2023" | "2024" | "2025">("2025");
+        function generateQuarterlyData(selectedDistricts, year) {
+            const quarters = [`Q1 ${year}`, `Q2 ${year}`, `Q3 ${year}`, `Q4 ${year}`];
+            return quarters.map((q, index) => {
+                const obj = { quarter: q };
+                selectedDistricts.forEach(d => {
+                    const yearOffset = year === '2023' ? -0.6 : year === '2024' ? -0.3 : 0;
+                    const trend = index * 0.15;
+                    const variation = (Math.random() - 0.5) * 0.4;
+                    obj[d.name] = Math.min(10, Math.max(1, d.scores.overall + yearOffset + trend + variation));
+                });
+                return obj;
+            });
+        }
 
-  const monthlyData = generateMonthlyData(districts.filter((d) => selectedDistricts.includes(d.name)));
-  const quarterlyData = generateQuarterlyData(districts.filter((d) => selectedDistricts.includes(d.name)), selectedYear);
-  const yearComparison = generateYearComparison(districts);
+        function generateYearComparison(selectedDistricts) {
+            return selectedDistricts.map(d => {
+                const score2023 = Math.min(10, Math.max(1, d.scores.overall - 0.8 + (Math.random() - 0.5) * 0.4));
+                const score2024 = Math.min(10, Math.max(1, d.scores.overall - 0.3 + (Math.random() - 0.5) * 0.3));
+                const score2025 = d.scores.overall;
+                return { name: d.name, "2023": score2023, "2024": score2024, "2025": score2025 };
+            });
+        }
 
-  const filteredDistricts = districts.filter((d) => selectedDistricts.includes(d.name));
+        function updateDashboard() {
+            if (!viewModeSelect || !yearSelect || !districtSelect) return;
 
-  // Calculate summary stats
-  const avgScore2025 = districts.reduce((sum, d) => sum + d.scores.overall, 0) / districts.length;
-  const avgScore2024 = yearComparison.reduce((sum, d) => sum + parseFloat(d["2024"]), 0) / yearComparison.length;
-  const avgScore2023 = yearComparison.reduce((sum, d) => sum + parseFloat(d["2023"]), 0) / yearComparison.length;
-  const yearOverYearChange = ((avgScore2025 - avgScore2024) / avgScore2024 * 100).toFixed(1);
+            const viewMode = viewModeSelect.value;
+            const year = yearSelect.value;
+            const districtOption = districtSelect.value;
 
-  return (
-    <div className="space-y-6 animate-fade-up">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-2xl font-bold text-foreground">Veri Analizi</h2>
-          <p className="text-muted-foreground">
-            Aylık trendler ve yıllık karşılaştırmalar (2023-2025)
-          </p>
+            let selectedDistricts = districtOption === 'all' ? districts : districts.slice(0, 5);
+            const monthlyData = generateMonthlyData(selectedDistricts);
+            const quarterlyData = generateQuarterlyData(selectedDistricts, year);
+            const yearComparison = generateYearComparison(selectedDistricts);
+
+            if (mainChartTitle) mainChartTitle.innerText = viewMode === 'monthly' ? "Aylık Trend Analizi (2025)" : `Çeyreklik Performans (${year})`;
+            yearSelect.style.display = viewMode === 'quarterly' ? 'inline' : 'none';
+
+            // Summary Stats
+            if (summaryContainer) {
+                summaryContainer.innerHTML = '';
+                const avg2025 = yearComparison.reduce((sum, d) => sum + d["2025"], 0) / yearComparison.length;
+                const avg2024 = yearComparison.reduce((sum, d) => sum + d["2024"], 0) / yearComparison.length;
+                const avg2023 = yearComparison.reduce((sum, d) => sum + d["2023"], 0) / yearComparison.length;
+                const yoyChange = ((avg2025 - avg2024) / avg2024 * 100).toFixed(1);
+
+                const stats = [
+                    { label: "2025 Ortalaması", value: avg2025.toFixed(1) },
+                    { label: "2024 Ortalaması", value: avg2024.toFixed(1) },
+                    { label: "2023 Ortalaması", value: avg2023.toFixed(1) },
+                    { label: "Yıllık Değişim", value: yoyChange + "%" },
+                    { label: "İzlenen Bölge", value: selectedDistricts.length }
+                ];
+
+                stats.forEach(s => {
+                    const div = document.createElement('div');
+                    div.className = 'glass-card p-2 text-center';
+                    div.innerHTML = `<strong>${s.label}</strong><p>${s.value}</p>`;
+                    summaryContainer.appendChild(div);
+                });
+            }
+
+            // Main Chart
+            if (mainChartRef.current) mainChartRef.current.destroy();
+            if (viewMode === 'monthly') {
+                mainChartRef.current = new Chart(mainChartCanvas, {
+                    type: 'line',
+                    data: {
+                        labels: monthlyData.map(d => d.month),
+                        datasets: selectedDistricts.map((d, index) => ({
+                            label: d.name,
+                            data: monthlyData.map(m => m[d.name]),
+                            borderColor: colors[index % colors.length],
+                            backgroundColor: colors[index % colors.length] + '33',
+                            fill: true,
+                            tension: 0.4
+                        }))
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            } else {
+                mainChartRef.current = new Chart(mainChartCanvas, {
+                    type: 'bar',
+                    data: {
+                        labels: quarterlyData.map(d => d.quarter),
+                        datasets: selectedDistricts.map((d, index) => ({
+                            label: d.name,
+                            data: quarterlyData.map(q => q[d.name]),
+                            backgroundColor: colors[index % colors.length]
+                        }))
+                    },
+                    options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+                });
+            }
+
+            // Year comparison chart
+            if (yearChartRef.current) yearChartRef.current.destroy();
+            yearChartRef.current = new Chart(yearChartCanvas, {
+                type: 'bar',
+                data: {
+                    labels: yearComparison.map(d => d.name),
+                    datasets: [
+                        { label: "2023", data: yearComparison.map(d => d["2023"]), backgroundColor: colors[0] },
+                        { label: "2024", data: yearComparison.map(d => d["2024"]), backgroundColor: colors[1] },
+                        { label: "2025", data: yearComparison.map(d => d["2025"]), backgroundColor: colors[2] }
+                    ]
+                },
+                options: { indexAxis: 'y', responsive: true, plugins: { legend: { position: 'bottom' } } }
+            });
+        }
+
+        viewModeSelect?.addEventListener('change', updateDashboard);
+        yearSelect?.addEventListener('change', updateDashboard);
+        districtSelect?.addEventListener('change', updateDashboard);
+
+        // Initial paint timeout to ensure chart loaded
+        setTimeout(updateDashboard, 500);
+
+        return () => {
+            viewModeSelect?.removeEventListener('change', updateDashboard);
+            yearSelect?.removeEventListener('change', updateDashboard);
+            districtSelect?.removeEventListener('change', updateDashboard);
+            if (mainChartRef.current) mainChartRef.current.destroy();
+            if (yearChartRef.current) yearChartRef.current.destroy();
+        }
+
+    }, []);
+
+    return (
+        <div style={{ fontFamily: 'sans-serif', margin: '20px', color: '#333' }}>
+            <div className="glass-card" style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(200,200,200,0.4)', padding: '20px', marginBottom: '20px' }}>
+                <h2 className="font-bold" style={{ fontWeight: 'bold' }}>Veri Analizi</h2>
+                <p className="text-muted" style={{ color: '#666' }}>Aylık trendler ve yıllık karşılaştırmalar (2023-2025)</p>
+
+                <div className="flex gap-3 flex-wrap" style={{ marginTop: '12px', display: 'flex', gap: '12px' }}>
+                    <select id="viewModeSelect" style={{ padding: '4px 6px', borderRadius: '6px', border: '1px solid #ccc' }}>
+                        <option value="monthly">Aylık Görünüm</option>
+                        <option value="quarterly">Çeyreklik Görünüm</option>
+                    </select>
+
+                    <select id="yearSelect" style={{ display: 'none', padding: '4px 6px', borderRadius: '6px', border: '1px solid #ccc' }}>
+                        <option value="2023">2023</option>
+                        <option value="2024">2024</option>
+                        <option value="2025" defaultValue="2025">2025</option>
+                    </select>
+
+                    <select id="districtSelect" style={{ padding: '4px 6px', borderRadius: '6px', border: '1px solid #ccc' }}>
+                        <option value="all">Tüm Bölgeler</option>
+                        <option value="top5" defaultValue="top5">İlk 5 Bölge</option>
+                    </select>
+                </div>
+            </div>
+
+            <div className="glass-card" id="summaryStats" style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(200,200,200,0.4)', padding: '20px', marginBottom: '20px' }}>
+                <h3 className="font-bold" style={{ fontWeight: 'bold' }}>Özet İstatistikler</h3>
+                <div className="grid grid-cols-5 gap-4" id="summaryContainer" style={{ display: 'grid', gap: '16px', gridTemplateColumns: 'repeat(5, 1fr)' }}></div>
+            </div>
+
+            <div className="glass-card" style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(200,200,200,0.4)', padding: '20px', marginBottom: '20px' }}>
+                <h3 className="font-bold" id="mainChartTitle" style={{ fontWeight: 'bold' }}>Aylık Trend Analizi (2025)</h3>
+                <canvas id="mainChart" height="300" style={{ maxWidth: '100%' }}></canvas>
+            </div>
+
+            <div className="glass-card" style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(10px)', borderRadius: '12px', border: '1px solid rgba(200,200,200,0.4)', padding: '20px', marginBottom: '20px' }}>
+                <h3 className="font-bold" style={{ fontWeight: 'bold' }}>2023 - 2024 - 2025 Karşılaştırması</h3>
+                <canvas id="yearComparisonChart" height="400" style={{ maxWidth: '100%' }}></canvas>
+            </div>
         </div>
-
-        <div className="flex items-center gap-3 flex-wrap">
-          <Select value={viewMode} onValueChange={(v: "monthly" | "quarterly") => setViewMode(v)}>
-            <SelectTrigger className="w-40">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="monthly">Aylık Görünüm</SelectItem>
-              <SelectItem value="quarterly">Çeyreklik Görünüm</SelectItem>
-            </SelectContent>
-          </Select>
-
-          {viewMode === "quarterly" && (
-            <Select value={selectedYear} onValueChange={(v: "2023" | "2024" | "2025") => setSelectedYear(v)}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="2023">2023</SelectItem>
-                <SelectItem value="2024">2024</SelectItem>
-                <SelectItem value="2025">2025</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-
-          <Select
-            value={selectedDistricts.length === districts.length ? "all" : "custom"}
-            onValueChange={(v) => {
-              if (v === "all") {
-                setSelectedDistricts(districts.map((d) => d.name));
-              } else {
-                setSelectedDistricts(districts.slice(0, 5).map((d) => d.name));
-              }
-            }}
-          >
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Bölge Seç" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tüm Bölgeler</SelectItem>
-              <SelectItem value="custom">İlk 5 Bölge</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="glass-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">2025 Ortalaması</p>
-                <p className="text-2xl font-bold text-primary">{avgScore2025.toFixed(1)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                <Calendar className="w-5 h-5 text-primary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">2024 Ortalaması</p>
-                <p className="text-2xl font-bold text-foreground">{avgScore2024.toFixed(1)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-secondary/10 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-secondary" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">2023 Ortalaması</p>
-                <p className="text-2xl font-bold text-foreground">{avgScore2023.toFixed(1)}</p>
-              </div>
-              <div className="w-10 h-10 rounded-full bg-muted/50 flex items-center justify-center">
-                <BarChart3 className="w-5 h-5 text-muted-foreground" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Yıllık Değişim</p>
-                <div className="flex items-center gap-2">
-                  <p className="text-2xl font-bold text-foreground">
-                    {parseFloat(yearOverYearChange) > 0 ? "+" : ""}
-                    {yearOverYearChange}%
-                  </p>
-                  {parseFloat(yearOverYearChange) > 0 ? (
-                    <TrendingUp className="w-5 h-5 text-score-high" />
-                  ) : (
-                    <TrendingDown className="w-5 h-5 text-score-low" />
-                  )}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="glass-card">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">İzlenen Bölge</p>
-                <p className="text-2xl font-bold text-foreground">{selectedDistricts.length}</p>
-              </div>
-              <Badge variant="outline" className="text-primary border-primary">
-                {viewMode === "monthly" ? "12 Ay" : "4 Çeyrek"}
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Chart */}
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="w-5 h-5 text-primary" />
-            {viewMode === "monthly" ? "Aylık Trend Analizi (2025)" : `Çeyreklik Performans (${selectedYear})`}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              {viewMode === "monthly" ? (
-                <AreaChart data={monthlyData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="month" className="text-xs" />
-                  <YAxis domain={[0, 10]} className="text-xs" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Legend />
-                  {filteredDistricts.map((district, index) => (
-                    <Area
-                      key={district.id}
-                      type="monotone"
-                      dataKey={district.name}
-                      stroke={colors[index % colors.length]}
-                      fill={colors[index % colors.length]}
-                      fillOpacity={0.1}
-                      strokeWidth={2}
-                    />
-                  ))}
-                </AreaChart>
-              ) : (
-                <BarChart data={quarterlyData}>
-                  <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                  <XAxis dataKey="quarter" className="text-xs" />
-                  <YAxis domain={[0, 10]} className="text-xs" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "hsl(var(--card))",
-                      border: "1px solid hsl(var(--border))",
-                      borderRadius: "8px",
-                    }}
-                  />
-                  <Legend />
-                  {filteredDistricts.map((district, index) => (
-                    <Bar
-                      key={district.id}
-                      dataKey={district.name}
-                      fill={colors[index % colors.length]}
-                      radius={[4, 4, 0, 0]}
-                    />
-                  ))}
-                </BarChart>
-              )}
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Year-over-Year Comparison */}
-      <Card className="glass-card">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="w-5 h-5 text-primary" />
-            2023 - 2024 - 2025 Karşılaştırması
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-96">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={yearComparison} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
-                <XAxis type="number" domain={[0, 10]} className="text-xs" />
-                <YAxis dataKey="name" type="category" width={80} className="text-xs" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
-                    borderRadius: "8px",
-                  }}
-                />
-                <Legend />
-                <Bar dataKey="2023" fill="hsl(var(--muted-foreground))" name="2023" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="2024" fill="hsl(var(--secondary))" name="2024" radius={[0, 4, 4, 0]} />
-                <Bar dataKey="2025" fill="hsl(var(--primary))" name="2025" radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Performance Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {yearComparison.slice(0, 10).map((district, index) => {
-          const change2425 = parseFloat(district["2025"]) - parseFloat(district["2024"]);
-          const isPositive = change2425 > 0;
-          return (
-            <Card key={index} className="glass-card hover:shadow-lg transition-shadow">
-              <CardContent className="p-4">
-                <h4 className="font-medium text-foreground mb-3">{district.name}</h4>
-                <div className="space-y-2 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">2023:</span>
-                    <span className="font-medium">{district["2023"]}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">2024:</span>
-                    <span className="font-medium">{district["2024"]}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">2025:</span>
-                    <span className="font-bold text-primary">{district["2025"]}</span>
-                  </div>
-                </div>
-                <div className={`flex items-center gap-1 mt-3 text-sm ${isPositive ? "text-score-high" : "text-score-low"}`}>
-                  {isPositive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
-                  <span>{isPositive ? "+" : ""}{change2425.toFixed(2)} (2024→2025)</span>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </div>
-    </div>
-  );
+    );
 };

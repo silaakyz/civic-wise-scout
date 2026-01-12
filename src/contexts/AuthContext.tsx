@@ -21,29 +21,30 @@ export const useAuth = () => {
   return ctx;
 };
 
-const API_URL = import.meta.env.VITE_API_URL;
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(false);
 
   const login = async (tc: string, password: string) => {
+    setLoading(true);
     try {
-      setLoading(true);
-
       const res = await fetch(`${API_URL}/api/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ tc, password }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
+        console.error("[Auth] Login failed:", data.message || res.statusText);
         return false;
       }
 
-      const data = await res.json();
-
       if (!data.success) {
+        console.error("[Auth] Login unsuccessful:", data.message);
         return false;
       }
 

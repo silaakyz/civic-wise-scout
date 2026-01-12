@@ -26,20 +26,19 @@ const priorityConfig = {
 };
 
 export const RecommendationsPanel = ({ districts }: RecommendationsPanelProps) => {
-  // Get all high priority actions from low-scoring districts
-  const priorityActions = districts
-    .filter((d) => d.scores.overall < 7.0)
-    .flatMap((d) =>
-      d.recommendedActions
-        .filter((a) => a.priority === "high")
-        .map((action) => ({
-          ...action,
-          districtName: d.name,
-          districtScore: d.scores.overall,
-        }))
-    )
+  // Tüm ilçelerin tüm aksiyonlarını alıyoruz
+  const allActions = districts.flatMap((d) =>
+    d.recommendedActions.map((action) => ({
+      ...action,
+      districtName: d.name,
+      districtScore: d.scores.overall,
+    }))
+  );
+
+  // İsteğe göre öncelik ve potansiyel puana göre sırala
+  const priorityActions = allActions
     .sort((a, b) => b.potentialScore - a.potentialScore)
-    .slice(0, 6);
+    .slice(0, 10); // İlk 10 aksiyonu göster, istersen sayıyı değiştir
 
   return (
     <div className="glass-card p-6 animate-fade-up" style={{ animationDelay: "300ms" }}>
@@ -54,7 +53,7 @@ export const RecommendationsPanel = ({ districts }: RecommendationsPanelProps) =
 
       <div className="space-y-4">
         {priorityActions.map((action, index) => {
-          const config = priorityConfig[action.priority];
+          const config = priorityConfig[action.priority] || priorityConfig.low;
           const Icon = config.icon;
 
           return (

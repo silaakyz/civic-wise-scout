@@ -1,19 +1,19 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { z } from "zod";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Button } from "../components/ui/button";
+import { Input } from "../components/ui/input";
+import { Label } from "../components/ui/label";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
+} from "../components/ui/card";
+import { useToast } from "../hooks/use-toast";
 import { Loader2, Building2, ShieldCheck } from "lucide-react";
 
 /* =========================
@@ -26,20 +26,20 @@ const tcKimlikSchema = z
 
 const passwordSchema = z.string().min(6, "Şifre en az 6 karakter olmalıdır");
 
-const Auth = () => {
+const Auth: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [loginTc, setLoginTc] = useState("");
-  const [loginPassword, setLoginPassword] = useState("");
+  const [loginTc, setLoginTc] = useState<string>("");
+  const [loginPassword, setLoginPassword] = useState<string>("");
 
-  const [isLoading, setIsLoading] = useState(false);
-  const [isCreating, setIsCreating] = useState(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isCreating, setIsCreating] = useState<boolean>(false);
 
   /* =========================
      LOGIN (MySQL BACKEND)
   ========================= */
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     try {
@@ -76,7 +76,6 @@ const Auth = () => {
         throw new Error(data.error || "Giriş başarısız");
       }
 
-      // Basit session (ileride JWT yapılır)
       localStorage.setItem("user", JSON.stringify(data.user));
 
       toast({
@@ -118,7 +117,6 @@ const Auth = () => {
         description: "Demo kullanıcı oluşturuldu.",
       });
 
-      // Otomatik doldur
       setLoginTc("12345678901");
       setLoginPassword("123456");
     } catch (err) {
@@ -160,9 +158,7 @@ const Auth = () => {
                 Bütçe Yönetim Müdürü Girişi
               </div>
               <CardTitle>Hoş Geldiniz</CardTitle>
-              <CardDescription>
-                Devam etmek için giriş yapın
-              </CardDescription>
+              <CardDescription>Devam etmek için giriş yapın</CardDescription>
             </CardHeader>
 
             <CardContent>
@@ -171,7 +167,7 @@ const Auth = () => {
                   <Label>TC Kimlik Numarası</Label>
                   <Input
                     value={loginTc}
-                    onChange={(e) =>
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                       setLoginTc(
                         e.target.value.replace(/\D/g, "").slice(0, 11)
                       )
@@ -186,7 +182,9 @@ const Auth = () => {
                   <Input
                     type="password"
                     value={loginPassword}
-                    onChange={(e) => setLoginPassword(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setLoginPassword(e.target.value)
+                    }
                     required
                   />
                 </div>
@@ -207,9 +205,7 @@ const Auth = () => {
                     <div className="w-full border-t" />
                   </div>
                   <div className="relative flex justify-center text-xs">
-                    <span className="bg-card px-2 text-muted-foreground">
-                      veya
-                    </span>
+                    <span className="bg-card px-2 text-muted-foreground">veya</span>
                   </div>
                 </div>
 

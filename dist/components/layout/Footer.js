@@ -1,0 +1,5 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Building2 } from "lucide-react";
+export const Footer = () => {
+    return (_jsx("footer", { className: "gradient-primary mt-auto", children: _jsx("div", { className: "container mx-auto px-4 py-8", children: _jsxs("div", { className: "flex flex-col md:flex-row items-center justify-between gap-4", children: [_jsxs("div", { className: "flex items-center gap-3", children: [_jsx("div", { className: "w-8 h-8 rounded-lg bg-primary-foreground/20 flex items-center justify-center", children: _jsx(Building2, { className: "w-5 h-5 text-primary-foreground" }) }), _jsxs("div", { children: [_jsx("span", { className: "text-lg font-bold text-primary-foreground", children: "LUXCIVIC" }), _jsx("p", { className: "text-xs text-primary-foreground/70", children: "\u00C7ok Kriterli Karar Destek Sistemi" })] })] }), _jsx("p", { className: "text-sm text-primary-foreground/70", children: "\u00A9 2025 LuxCivic. T\u00FCm haklar\u0131 sakl\u0131d\u0131r." })] }) }) }));
+};

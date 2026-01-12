@@ -1,0 +1,7 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { cn } from "../../lib/utils.js";
+export const StatsCard = ({ title, value, subtitle, icon: Icon, trend, className, delay = 0, }) => {
+    return (_jsx("div", { className: cn("glass-card p-6 hover-lift hover-glow group", className), style: { animationDelay: `${delay}ms` }, children: _jsxs("div", { className: "flex items-start justify-between", children: [_jsxs("div", { className: "flex-1", children: [_jsx("p", { className: "text-sm font-medium text-muted-foreground mb-1", children: title }), _jsx("p", { className: "text-3xl font-bold text-foreground mb-1", children: value }), subtitle && (_jsx("p", { className: "text-xs text-muted-foreground", children: subtitle })), trend && (_jsxs("div", { className: "flex items-center gap-1 mt-2", children: [_jsxs("span", { className: cn("text-xs font-semibold px-2 py-0.5 rounded-full", trend.isPositive
+                                        ? "bg-score-excellent/10 text-score-excellent"
+                                        : "bg-score-critical/10 text-score-critical"), children: [trend.isPositive ? "↑" : "↓", " ", Math.abs(trend.value), "%"] }), _jsx("span", { className: "text-xs text-muted-foreground", children: "son \u00E7eyrek" })] }))] }), _jsx("div", { className: "w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors", children: _jsx(Icon, { className: "w-6 h-6 text-primary" }) })] }) }));
+};
