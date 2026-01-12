@@ -1,4 +1,4 @@
-# İzmir Kentsel Dönüşüm Karar Destek Sistemi (KDS)
+# İzmir Kentsel Dönüşüm Karar Destek Sistemi (KDS) - Backend
 
 ## 1. Projenin Amacı
 Bu projenin amacı; öğrencilerin gerçekçi bir iş problemi üzerinden sunucu taraflı yazılım geliştirme, **MVC mimarisini** uygulama, **REST** prensiplerine uygun API tasarlama ve temiz kod yazma becerilerini kazanmalarını sağlamaktır.
@@ -8,7 +8,8 @@ Bu sistem, İzmir ilinin ilçelerine ait kentsel dönüşüm verilerini (skorlar
 Yöneticiler, ilçelerin mevcut durumunu görebilir ve yeni aksiyon planları ekleyip çıkarabilirler.
 
 ## 3. Kurulum Adımları
-1.  Backend klasörüne gidin:
+
+1.  Proje klasörüne gidin:
     ```bash
     cd backend
     ```
@@ -31,11 +32,10 @@ Yöneticiler, ilçelerin mevcut durumunu görebilir ve yeni aksiyon planları ek
 | :--- | :--- | :--- |
 | `GET` | `/api/districts-full` | Tüm ilçelerin detaylı verilerini (skorlar, faktörler, aksiyonlar) getirir. |
 | `POST` | `/api/districts/:id/actions` | Bir ilçeye yeni bir aksiyon ekler. |
-| `PUT` | `/api/actions/:id` | Bir aksiyonu günceller. |
 | `DELETE` | `/api/actions/:id` | Bir aksiyonu siler. |
 
 ### İş Kuralları (Business Rules)
-1.  **Bütçe Kontrolü**: Yeni bir aksiyon eklenirken veya güncellenirken `budget` (bütçe) değeri negatif olamaz.
+1.  **Bütçe Kontrolü**: Yeni bir aksiyon eklenirken `budget` (bütçe) değeri negatif olamaz.
 2.  **Silme Koruması**: Önceliği (`priority`) **'high'** (yüksek) olan aksiyonlar silinemez.
 
 ## 5. ER Diyagramı
